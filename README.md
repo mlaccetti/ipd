@@ -3,46 +3,46 @@
 [![Build Status](https://travis-ci.org/mpolden/ipd.svg)](https://travis-ci.org/mpolden/ipd)
 
 A simple service for looking up your IP address. This is the code that powers
-https://ifconfig.co.
+https://ifconfig2.co.
 
 ## Usage
 
 Just the business, please:
 
 ```
-$ curl ifconfig.co
+$ curl ifconfig2.co
 127.0.0.1
 
-$ http ifconfig.co
+$ http ifconfig2.co
 127.0.0.1
 
-$ wget -qO- ifconfig.co
+$ wget -qO- ifconfig2.co
 127.0.0.1
 
-$ fetch -qo- https://ifconfig.co
+$ fetch -qo- https://ifconfig2.co
 127.0.0.1
 
-$ bat -print=b ifconfig.co/ip
+$ bat -print=b ifconfig2.co/ip
 127.0.0.1
 ```
 
 Country and city lookup:
 
 ```
-$ curl ifconfig.co/country
+$ curl ifconfig2.co/country
 Elbonia
 
-$ curl ifconfig.co/country-iso
+$ curl ifconfig2.co/country-iso
 EB
 
-$ curl ifconfig.co/city
+$ curl ifconfig2.co/city
 Bornyasherk
 ```
 
 As JSON:
 
 ```
-$ curl -H 'Accept: application/json' ifconfig.co  # or curl ifconfig.co/json
+$ curl -H 'Accept: application/json' ifconfig2.co  # or curl ifconfig2.co/json
 {
   "city": "Bornyasherk",
   "country": "Elbonia",
@@ -55,7 +55,7 @@ $ curl -H 'Accept: application/json' ifconfig.co  # or curl ifconfig.co/json
 Port testing:
 
 ```
-$ curl ifconfig.co/port/80
+$ curl ifconfig2.co/port/80
 {
   "ip": "127.0.0.1",
   "port": 80,
@@ -66,7 +66,7 @@ $ curl ifconfig.co/port/80
 Pass the appropriate flag (usually `-4` and `-6`) to your client to switch
 between IPv4 and IPv6 lookup.
 
-The subdomains https://v4.ifconfig.co and https://v6.ifconfig.co can be used to
+The subdomains https://v4.ifconfig2.co and https://v6.ifconfig2.co can be used to
 force IPv4 or IPv6 lookup.
 
 ## Features
@@ -92,7 +92,7 @@ force IPv4 or IPv6 lookup.
 Compiling requires the [Golang compiler](https://golang.org/) to be installed.
 This package can be installed with `go get`:
 
-`go get github.com/mpolden/ipd/...`
+`go get github.com/mlaccetti/ipd2/...`
 
 For more information on building a Go project, see the [official Go
 documentation](https://golang.org/doc/code.html).

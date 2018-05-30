@@ -1,2 +1,5 @@
 /data/
 /custom.html
+/vendor/
+/.idea/
+/build/

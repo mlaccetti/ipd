@@ -15,10 +15,13 @@ vet:
 	go vet ./...
 
 deps:
-	go get -d -v ./...
+	dep ensure
 
 install:
 	go install ./...
+
+build:
+  go build -o build/ipd2 ./cmd/ipd/main.go
 
 databases := GeoLite2-City GeoLite2-Country
 

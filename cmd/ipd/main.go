@@ -2,32 +2,22 @@ package main
 
 import (
 	"log"
-
-	flags "github.com/jessevdk/go-flags"
-
 	"os"
 
-	"github.com/mpolden/ipd/http"
-	"github.com/mpolden/ipd/iputil"
-	"github.com/mpolden/ipd/iputil/database"
+	"github.com/mlaccetti/ipd2/http"
+	"github.com/mlaccetti/ipd2/iputil"
+	"github.com/mlaccetti/ipd2/iputil/database"
 )
 
 func main() {
-	var opts struct {
-		CountryDBPath string `short:"f" long:"country-db" description:"Path to GeoIP country database" value-name:"FILE" default:""`
-		CityDBPath    string `short:"c" long:"city-db" description:"Path to GeoIP city database" value-name:"FILE" default:""`
-		Listen        string `short:"l" long:"listen" description:"Listening address" value-name:"ADDR" default:":8080"`
-		ReverseLookup bool   `short:"r" long:"reverse-lookup" description:"Perform reverse hostname lookups"`
-		PortLookup    bool   `short:"p" long:"port-lookup" description:"Enable port lookup"`
-		Template      string `short:"t" long:"template" description:"Path to template" default:"index.html" value-name:"FILE"`
-		IPHeader      string `short:"H" long:"trusted-header" description:"Header to trust for remote IP, if present (e.g. X-Real-IP)" value-name:"NAME"`
-	}
-	_, err := flags.ParseArgs(&opts, os.Args)
-	if err != nil {
-		os.Exit(1)
+	opts := config()
+	if opts.Help {
+		printHelp()
+		os.Exit(0)
 	}
 
-	log := log.New(os.Stderr, "ipd: ", 0)
+	log.SetFlags(0)
+	
 	db, err := database.New(opts.CountryDBPath, opts.CityDBPath)
 	if err != nil {
 		log.Fatal(err)
