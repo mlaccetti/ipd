@@ -8,7 +8,9 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	opts := config()
+	viper, opts, err := config()
+	assert.Nil(t, err, "loading a config should not throw an err")
+	assert.NotNil(t, viper, "viper should not be nil")
 	assert.NotNil(t, opts, "opt should not be nil")
 	fmt.Printf("%+v\n", opts)
 }

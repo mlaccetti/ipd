@@ -37,10 +37,20 @@ func init() {
 	viper.BindPFlags(flags.CommandLine)
 
 	viper.AutomaticEnv()
+
+	viper.SetConfigName("ipd2") // name of config file (without extension)
+	viper.AddConfigPath("/etc/ipd2/")   // path to look for the config file in
+	viper.AddConfigPath("$HOME/.ipd2")  // call multiple times to add many search paths
+	viper.AddConfigPath(".")            // optionally look for config in the working directory
 }
 
-func config() *opts {
-	return opt
+func config() (*viper.Viper, *opts, error ) {
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil { // Handle errors reading the config file
+		return nil, nil, err
+	}
+
+	return viper.GetViper(), opt, nil
 }
 
 func printHelp() {
