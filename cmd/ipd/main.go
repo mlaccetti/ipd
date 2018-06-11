@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"reflect"
 
 	"github.com/mlaccetti/ipd2/http"
 	"github.com/mlaccetti/ipd2/iputil"
@@ -11,43 +10,55 @@ import (
 )
 
 func main() {
-	viper, opts, err := config()
+	retVal := runServer()
+	os.Exit(retVal)
+}
+
+func runServer() int {
+	log.Println("Kicking off ipd2")
+
+	viper, err := config()
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
+		return 1
 	}
 
-	if viper.GetBool(reflect.Indirect(reflect.ValueOf(opts.Help)).Type().Field(0).Name) {
+	if viper.GetBool("Help") {
+		log.Println("Help mode invoked")
 		printHelp()
-		os.Exit(0)
+		return 0
 	}
 
 	log.SetFlags(0)
-	
-	db, err := database.New(opts.CountryDBPath, opts.CityDBPath)
+
+	db, err := database.New(viper.GetString("CountryDBPath"), viper.GetString("CityDBPath"))
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
+		return 1
 	}
 
 	server := http.New(db)
-	server.Template = opts.Template
-	server.IPHeader = opts.IPHeader
-	if opts.ReverseLookup {
+	server.Template = viper.GetString("Template")
+	ipHeader := viper.GetString("IPHeader")
+	server.IPHeader = ipHeader
+	if viper.GetBool("ReverseLookup") {
 		log.Println("Enabling reverse lookup")
 		server.LookupAddr = iputil.LookupAddr
 	}
-	if opts.PortLookup {
+	if viper.GetBool("PortLookup") {
 		log.Println("Enabling port lookup")
 		server.LookupPort = iputil.LookupPort
 	}
-	if opts.IPHeader != "" {
-		log.Printf("Trusting header %s to contain correct remote IP", opts.IPHeader)
+	if ipHeader != "" {
+		log.Printf("Trusting header %s to contain correct remote IP", ipHeader)
 	}
 
-	log.Printf("Listening on http://%s", opts.Listen)
-	if err := server.ListenAndServe(opts.Listen); err != nil {
+	listen := viper.GetString("Listen")
+	log.Printf("Listening on http://%s", listen)
+	if err := server.ListenAndServe(listen); err != nil {
 		log.Fatal(err)
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }
