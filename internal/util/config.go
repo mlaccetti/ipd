@@ -2,7 +2,6 @@ package util
 
 import (
 	"flag"
-	"log"
 
 	flags "github.com/spf13/pflag"
 
@@ -16,6 +15,8 @@ type opts struct {
 	CityDBPath    string
 	Listen        string
 	ListenTLS     string
+	TLSKey        string
+	TLSCert       string
 	ReverseLookup bool
 	PortLookup    bool
 	Template      string
@@ -24,40 +25,40 @@ type opts struct {
 
 var _ = &opts{
 	Help: *flags.BoolP("help", "h", false, "This help text"),
-	Verbose: *flags.BoolP("verbose", "v", false, "verbose output"),
+	Verbose: *flags.BoolP("verbose", "v", false, "verbose output (default false"),
 	CountryDBPath: *flags.StringP("country-db", "f", "", "Path to GeoIP country database"),
 	CityDBPath: *flags.StringP("city-db", "c", "", "Path to GeoIP city database"),
 	Listen: *flags.StringP("listen", "l", ":8080", "Listening address"),
 	ListenTLS: *flags.StringP("listen-tls", "s", ":8443", "Listening address for TLS"),
+	TLSKey: *flags.StringP("tls-key", "k", "", "Path to the TLS key to use (ignored if no TLS listen address is specified)"),
+	TLSCert: *flags.StringP("tls-cert", "e", "", "Path to the TLS certificate to use (ignored if no TLS listen address is specified)"),
 	ReverseLookup: *flags.BoolP("reverse-lookup", "r", true, "Perform reverse hostname lookups"),
 	PortLookup: *flags.BoolP("port-lookup", "p", true, "Perform port lookups"),
 	Template: *flags.StringP("template", "t", "index.html", "Path to template"),
-	IPHeader: *flags.StringP("trusted-header", "H", "X-Real-IP", "Header with 'real' IP, if present (i.e. X-Real-IP)"),
+	IPHeader: *flags.StringP("trusted-header", "H", "X-Forwarded-For", "Header with 'real' IP, if present"),
 }
 
-func Config() (*viper.Viper, error ) {
-	log.Println("Configuration initializing...")
+func Config() (*viper.Viper ) {
+	v := viper.New()
+
+	v.SetDefault("help", false)
+	v.SetDefault("verbose", false)
+	v.SetDefault("listen", ":8080")
+	v.SetDefault("listen-tls", ":8443")
+	v.SetDefault("reverse-lookup", true)
+	v.SetDefault("port-lookup", true)
+	v.SetDefault("template", "index.html")
+	v.SetDefault("trusted-header", "X-Forwarded-For")
 
 	flags.CommandLine.SortFlags = false
 
 	flags.CommandLine.AddGoFlagSet(flag.CommandLine)
 	flags.Parse()
-	viper.BindPFlags(flags.CommandLine)
+	v.BindPFlags(flags.CommandLine)
 
-	viper.AutomaticEnv()
+	v.AutomaticEnv()
 
-	viper.SetConfigName("ipd2") // name of util file (without extension)
-	viper.AddConfigPath("/etc/ipd2/")   // path to look for the util file in
-	viper.AddConfigPath("$HOME/.ipd2")  // call multiple times to add many search paths
-	viper.AddConfigPath("./configs")            // optionally look for util in the working directory
-
-	err := viper.ReadInConfig() // Find and read the util file
-	if err != nil { // Handle errors reading the util file
-		return nil, err
-	}
-
-	log.Println("Configuration completed.")
-	return viper.GetViper(), nil
+	return v
 }
 
 func PrintHelp() {

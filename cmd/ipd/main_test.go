@@ -1,20 +1,34 @@
 package main
 
 import (
-	"log"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestRunServerHelp(t *testing.T) {
-	oldArgs := os.Args
-	defer func() { os.Args = oldArgs }()
+var testCases = []struct {
+	name string
+	in []string
+	retVal int
+} {
+	{"help", []string{"--help", "true"}, 0},
+	{"verbose", []string{"--verbose", "true"}, 0},
+}
 
-	log.Println("Testing server with `--help` flag")
-	os.Args = []string{"noop", "--help"}
-	retVal := runServer()
+func TestRunServer(t *testing.T) {
+	for _, tt := range testCases {
+		flag := tt.in[0][2:]
+		flagVal := tt.in[1]
+		t.Logf("Setting %s to %s", flag, flagVal)
+		os.Setenv(flag, flagVal)
 
-	assert.Equal(t, 0, retVal, "Expect a return value of zero.")
+		t.Run(tt.name, func(t *testing.T) {
+			retVal := runServer(true)
+			if retVal != tt.retVal {
+				t.Errorf("got %q, wanted %q", retVal, tt.retVal)
+			}
+		})
+
+		t.Logf("Unsetting %s", flag)
+		os.Unsetenv(flag)
+	}
 }
