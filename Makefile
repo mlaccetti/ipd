@@ -1,4 +1,6 @@
 OS := $(shell uname)
+TARGET := ipd2
+
 ifeq ($(OS),Linux)
 	TAR_OPTS := --wildcards
 endif
@@ -30,10 +32,19 @@ install:
 	go install ./...
 	@echo ""
 
-build:
-	@echo "Building the ipd2 app"
-	go build -o build/ipd2 ./cmd/ipd/main.go
-	@echo ""
+build: build_darwin_amd64 \
+	build_linux_amd64 \
+	build_windows_amd64
+
+build_darwin_%: GOOS := darwin
+build_linux_%: GOOS := linux
+build_windows_%: GOOS := windows
+build_windows_%: EXT := .exe
+
+build_%_amd64: GOARCH := amd64
+
+build_%:
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/$(TARGET)-${TRAVIS_TAG}-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
 
 databases := GeoLite2-City GeoLite2-Country
 

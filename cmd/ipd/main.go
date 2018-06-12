@@ -93,7 +93,7 @@ func runServer(testMode bool) int {
 
 		log.Printf("TLS is enabled, listening on https://%s, using certificate %s and key %s", listenTls, tlsCert, tlsKey)
 	} else {
-		log.Printf("TLS is not enabled, either due to an empty listen address, or a missing certificate/key.")
+		log.Printf("TLS is not enabled due to an empty listen address or a missing certificate/key.")
 	}
 
 	if !testMode {
