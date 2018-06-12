@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
-	"github.com/mlaccetti/ipd2/http"
-	"github.com/mlaccetti/ipd2/iputil"
-	"github.com/mlaccetti/ipd2/iputil/database"
+	"github.com/mlaccetti/ipd2/internal/http"
+	"github.com/mlaccetti/ipd2/internal/iputil"
+	"github.com/mlaccetti/ipd2/internal/iputil/database"
+	"github.com/mlaccetti/ipd2/internal/util"
 )
 
 func main() {
@@ -17,7 +19,7 @@ func main() {
 func runServer() int {
 	log.Println("Kicking off ipd2")
 
-	viper, err := config()
+	viper, err := util.Config()
 	if err != nil {
 		log.Fatal(err)
 		return 1
@@ -25,7 +27,7 @@ func runServer() int {
 
 	if viper.GetBool("Help") {
 		log.Println("Help mode invoked")
-		printHelp()
+		util.PrintHelp()
 		return 0
 	}
 
@@ -50,15 +52,27 @@ func runServer() int {
 		server.LookupPort = iputil.LookupPort
 	}
 	if ipHeader != "" {
-		log.Printf("Trusting header %s to contain correct remote IP", ipHeader)
+		log.Println(fmt.Printf("Trusting header %s to contain correct remote IP\n", ipHeader))
 	}
 
 	listen := viper.GetString("Listen")
-	log.Printf("Listening on http://%s", listen)
-	if err := server.ListenAndServe(listen); err != nil {
-		log.Fatal(err)
+	tlsConfig := viper.GetStringMapString("tls")
+	isTlsSet := viper.IsSet("listen-tls")
+	log.Printf("TLS is set: %v", isTlsSet)
+
+	listenTls := ""
+	if isTlsSet {
+		listenTls = viper.GetString("listen-tls")
+	}
+
+	log.Println(fmt.Printf("Listening on http://%s, https://%s, using TLS config %s\n", listen, listenTls, tlsConfig))
+	errs := server.ListenAndServe(listen, listenTls, tlsConfig)
+	select {
+	case err := <-errs:
+		log.Fatalf("Could not start serving service due to (error: %s)", err)
 		return 1
 	}
+
 
 	return 0
 }

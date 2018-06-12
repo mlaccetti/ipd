@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net"
 	"net/http"
 	"path/filepath"
 	"strconv"
 
-	"github.com/mlaccetti/ipd2/iputil"
-	"github.com/mlaccetti/ipd2/iputil/database"
-	"github.com/mlaccetti/ipd2/useragent"
+	"github.com/mlaccetti/ipd2/internal/iputil"
+	"github.com/mlaccetti/ipd2/internal/iputil/database"
+	"github.com/mlaccetti/ipd2/internal/useragent"
 )
 
 const (
@@ -24,6 +25,7 @@ type Server struct {
 	IPHeader   string
 	LookupAddr func(net.IP) (string, error)
 	LookupPort func(net.IP, uint64) error
+	TLS        map[string]string
 	db         database.Client
 }
 
@@ -265,6 +267,27 @@ func (s *Server) Handler() http.Handler {
 	return r.Handler()
 }
 
-func (s *Server) ListenAndServe(addr string) error {
-	return http.ListenAndServe(addr, s.Handler())
+func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]string) chan error {
+	errs := make(chan error)
+
+	// Start HTTP server
+	go func() {
+		log.Printf("Staring HTTP service on %s ...\n", addr)
+
+		if err := http.ListenAndServe(addr, s.Handler()); err != nil {
+			errs <- err
+		}
+	}()
+
+	if sslAddr != "" {
+		// Start HTTPS server
+		go func() {
+			log.Printf("Staring HTTPS service on %s ...\n", sslAddr)
+			if err := http.ListenAndServeTLS(sslAddr, "./configs/" + ssl["cert"], "./configs/" + ssl["key"], s.Handler()); err != nil {
+				errs <- err
+			}
+		}()
+	}
+
+	return errs
 }

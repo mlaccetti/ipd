@@ -1,0 +1,5 @@
+# config file
+
+tls:
+  key: dummy-key.pem
+  cert: dummy-cert.pem

@@ -1,6 +1,7 @@
-package main
+package util
 
 import (
+	"flag"
 	"log"
 
 	flags "github.com/spf13/pflag"
@@ -14,6 +15,7 @@ type opts struct {
 	CountryDBPath string
 	CityDBPath    string
 	Listen        string
+	ListenTLS     string
 	ReverseLookup bool
 	PortLookup    bool
 	Template      string
@@ -26,29 +28,31 @@ var _ = &opts{
 	CountryDBPath: *flags.StringP("country-db", "f", "", "Path to GeoIP country database"),
 	CityDBPath: *flags.StringP("city-db", "c", "", "Path to GeoIP city database"),
 	Listen: *flags.StringP("listen", "l", ":8080", "Listening address"),
+	ListenTLS: *flags.StringP("listen-tls", "s", ":8443", "Listening address for TLS"),
 	ReverseLookup: *flags.BoolP("reverse-lookup", "r", true, "Perform reverse hostname lookups"),
 	PortLookup: *flags.BoolP("port-lookup", "p", true, "Perform port lookups"),
 	Template: *flags.StringP("template", "t", "index.html", "Path to template"),
 	IPHeader: *flags.StringP("trusted-header", "H", "X-Real-IP", "Header with 'real' IP, if present (i.e. X-Real-IP)"),
 }
 
-func config() (*viper.Viper, error ) {
+func Config() (*viper.Viper, error ) {
 	log.Println("Configuration initializing...")
 
 	flags.CommandLine.SortFlags = false
 
+	flags.CommandLine.AddGoFlagSet(flag.CommandLine)
 	flags.Parse()
 	viper.BindPFlags(flags.CommandLine)
 
 	viper.AutomaticEnv()
 
-	viper.SetConfigName("ipd2") // name of config file (without extension)
-	viper.AddConfigPath("/etc/ipd2/")   // path to look for the config file in
+	viper.SetConfigName("ipd2") // name of util file (without extension)
+	viper.AddConfigPath("/etc/ipd2/")   // path to look for the util file in
 	viper.AddConfigPath("$HOME/.ipd2")  // call multiple times to add many search paths
-	viper.AddConfigPath(".")            // optionally look for config in the working directory
+	viper.AddConfigPath("./configs")            // optionally look for util in the working directory
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil { // Handle errors reading the config file
+	err := viper.ReadInConfig() // Find and read the util file
+	if err != nil { // Handle errors reading the util file
 		return nil, err
 	}
 
@@ -56,6 +60,6 @@ func config() (*viper.Viper, error ) {
 	return viper.GetViper(), nil
 }
 
-func printHelp() {
+func PrintHelp() {
 	flags.PrintDefaults()
 }

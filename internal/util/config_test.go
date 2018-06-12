@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestConfig(t *testing.T) {
 	viper, err := config()
-	assert.Nil(t, err, "loading a config should not throw an err")
+	assert.Nil(t, err, "loading a util should not throw an err")
 	assert.NotNil(t, viper, "viper should not be nil")
 }
 
