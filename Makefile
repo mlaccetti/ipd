@@ -5,7 +5,7 @@ ifeq ($(OS),Linux)
 	TAR_OPTS := --wildcards
 endif
 
-all: deps test vet install build
+all: deps test vet build
 
 fmt:
 	@echo "Formatting all the things..."
@@ -25,11 +25,6 @@ vet:
 deps:
 	@echo "Ensuring dependencies are in place"
 	dep ensure
-	@echo ""
-
-install:
-	@echo "Installing the stuffs"
-	go install ./...
 	@echo ""
 
 build: build_darwin_amd64 \
