@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,8 +17,6 @@ func main() {
 }
 
 func runServer(testMode bool) int {
-	log.Println("ipd2 initializing...")
-
 	viper := util.Config()
 
 	if viper.IsSet("help") && viper.GetBool("help") {
@@ -34,47 +31,73 @@ func runServer(testMode bool) int {
 		log.Println("Verbose mode: enabled")
 	}
 
-	countryDbPath := viper.GetString("CountryDBPath")
-	cityDbPath := viper.GetString("CityDBPath")
+	countryDbPath := viper.GetString("country-db")
+	if countryDbPath != "" {
+		log.Printf("Loading country DB from %s", countryDbPath)
+	}
+
+	cityDbPath := viper.GetString("city-db")
+	if cityDbPath != "" {
+		log.Printf("Loading city DB from %s", cityDbPath)
+	}
+
 	db, err := database.New(countryDbPath, cityDbPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Could not load GeoIP information: %s", err)
+		return 1
+	}
+
+	if !viper.IsSet("template") || viper.GetString("template") == "" {
+		log.Printf("No template set, cannot proceed!")
+		return 1
+	}
+
+	if !viper.IsSet("listen") || viper.GetString("listen") == "" {
+		log.Printf("No listen address/port set, cannot proceed!")
 		return 1
 	}
 
 	server := http.New(db)
-	server.Template = viper.GetString("Template")
-	ipHeader := viper.GetString("IPHeader")
-	server.IPHeader = ipHeader
+	server.Template = viper.GetString("template")
 
-	if viper.GetBool("ReverseLookup") {
+	if viper.IsSet("trusted-header") {
+		ipHeader := viper.GetString("trusted-header")
+		server.IPHeader = ipHeader
+		log.Printf("Trusting header %s (if found) to contain correct remote IP\n", ipHeader)
+	}
+
+	if viper.IsSet("reverse-lookup") && viper.GetBool("reverse-lookup") {
 		log.Println("Enabling reverse lookup")
 		server.LookupAddr = iputil.LookupAddr
 	}
 
-	if viper.GetBool("PortLookup") {
+	if viper.IsSet("port-lookup") && viper.GetBool("port-lookup") {
 		log.Println("Enabling port lookup")
 		server.LookupPort = iputil.LookupPort
 	}
 
-	if ipHeader != "" {
-		log.Println(fmt.Printf("Trusting header %s to contain correct remote IP\n", ipHeader))
-	}
-
 	listen := viper.GetString("listen")
-	tlsConfig := viper.GetStringMapString("tls")
-	isTlsSet := viper.IsSet("listen-tls")
-	log.Printf("TLS is set: %v", isTlsSet)
+	log.Printf("Listening on http://%s", listen)
+
+	isTlsSet := viper.IsSet("listen-tls") && viper.IsSet("tls-key") && viper.IsSet("tls-cert") &&
+		viper.GetString("listen-tls") != "" && viper.GetString("tls-key") != "" && viper.GetString("tls-cert") != ""
 
 	listenTls := ""
+	tlsKey := ""
+	tlsCert := ""
+
 	if isTlsSet {
 		listenTls = viper.GetString("listen-tls")
+		tlsKey = viper.GetString("tls-key")
+		tlsCert = viper.GetString("tls-cert")
+
+		log.Printf("TLS is enabled, listening on https://%s, using certificate %s and key %s", listenTls, tlsCert, tlsKey)
+	} else {
+		log.Printf("TLS is not enabled, either due to an empty listen address, or a missing certificate/key.")
 	}
 
-	log.Println(fmt.Printf("Listening on http://%s, https://%s, using TLS config %s\n", listen, listenTls, tlsConfig))
-
 	if !testMode {
-		errs := server.ListenAndServe(listen, listenTls, tlsConfig)
+		errs := server.ListenAndServe(listen, listenTls, map[string]string{"cert": tlsCert, "key": tlsKey})
 
 		select {
 		case err := <-errs:

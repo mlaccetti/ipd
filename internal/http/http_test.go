@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mlaccetti/ipd2/internal/iputilal/iputil/database"
+	"github.com/mlaccetti/ipd2/internal/iputil/database"
 )
 
 func lookupAddr(net.IP) (string, error) { return "localhost", nil }
