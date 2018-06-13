@@ -41,15 +41,6 @@ var _ = &opts{
 func Config() (*viper.Viper ) {
 	v := viper.New()
 
-	/*v.SetDefault("help", false)
-	v.SetDefault("verbose", false)
-	v.SetDefault("listen", ":8080")
-	v.SetDefault("listen-tls", ":8443")
-	v.SetDefault("reverse-lookup", true)
-	v.SetDefault("port-lookup", true)
-	v.SetDefault("template", "index.html")
-	v.SetDefault("trusted-header", "X-Forwarded-For")*/
-
 	flags.CommandLine.SortFlags = false
 
 	flags.CommandLine.AddGoFlagSet(flag.CommandLine)
