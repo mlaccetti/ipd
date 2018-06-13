@@ -3,7 +3,7 @@ sudo: false
 language: go
 
 go:
-- "1.10.x"
+- 1.10.x
 
 before_install:
 - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -16,9 +16,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: "EeyvDrS8U7OQGbS4b9GEVxApj/yzzW1FGSXlcoZ60FKCF6e1xFIB0foC4KOn571CHZebejAHWMX8B7C1RfPH4YKsLFPouP/eO/qFTMxY0a0j/pG6akGLMLUROGF5gm5hkHMFKItnyZhj1f76zZ96hTshZYz6ZxtnvI+vvpETSC3G2+FYGRBmzQIC7e+/hKea6+LZg4qBHMtXiGs2Te2j8+k76iC0dgx9PXw8lSMUD6HnT4l8WH4+g+gobIcjUhv3A/WxyY7Prm7TW6KkZrgbagrbBiXOv+u2sXmeV8qnargFoTnKKcAgfBNDeSqIccI6+YfG3d6VcdAbZ+SR/pxjCkmDdFoYiXQEktpdVZ7lH8ojjPnh6PfZnY5UL/4ThPQLgkV20psPuM4/bKU/HW9dhDHjjWnxsQD5sH9ldsv0vNaYfGPODIoedEJLw3C/7/vAOsYWcQ8VRCnvwqi9a+Ja+solk8YdFXQphwsaE0l3QO8xJqWPCgJzSWxCENU6/CQFLkQEh8gUpyA74x/xkPRrQmMHh+lcwcNtqjVMCQ0lK0zTW4ynWVvsZwKmj+YIn8O1k90EllWUcxvjI2PPzhYdnXnOuymIgwjG6SvlEEKsctxPQS5v/kaNfR302M8GdT5uA6tR8KesQ3uepwwO9Dp8AZeo2q4A+BGLxJQwpPhqnKY="
-  file_glob: true
-  file: build/*
-  skip_cleanup: true
+    secure: G02+snlJ+UzJe5mZELB7/UDv6xmKQhwr9w5Wkz/SCCYxVoDusKcZ78mfl/Ao/HhV8XSK5+E0Xe6/fOUZKEJXxqwRtdnpMSlOlPih3dw3BSYcLegSXcEAOR/wrHaCaQrnxb9KBGWA4Yf6pcd8rualhJ+ndzbiFWo+PTVKtYRYw6AU/BKU6sGbyOX1eBq8fC6cUhsEgkt87R+erajLxhSj4ObSPa8bmnKJTZReMSUzC74+250yXWal+oOKUIKp465w8AVjoSCHUD1U6JsbpT9oJewMp5awmJcuQtuTwLsm/qjS2HLGD+GGRP6fFoITWUczrRgLyjcmab2ckNpJUFnD++LsUq+Arwg87V5L71ejDljrmzQb0JQdL/r4cEtkhm00caPHPqvhqaEWgLZf4CiiZC08dEwrbEy5PBGlDKKvJAO6d8EOJ4NDS83g2W4HUlHlk2drk2oWAoPILkjnkp8/q2sFdifOJCVMvqyRtPj7M4EGqBGnMZGGvdbK4oXPpO/PS2YBht+5AkwiYii9PhBoX446Mj6ih0nDGG6cyv3WBHPlP5kI4kBDJVLxzVpFGSPgq0TlJABSOUjd+TlciiQQW+FzFJtZiTZn2HTujY3A8lOPXfHDrHpRcUBoxLfF37ChDwEutdYhHHaCIQdu0aTZMnqR8owIMwJJbcs7I/UC/QM=
+  file: build/ipd2*
   on:
-    tags: true
+    repo: mlaccetti/ipd2
