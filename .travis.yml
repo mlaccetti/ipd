@@ -11,7 +11,6 @@ before_install:
 before_deploy:
 - git config --local user.name "Michael Laccetti"
 - git config --local user.email "michael@laccetti.com"
-- git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
 
 deploy:
   provider: releases
@@ -19,4 +18,4 @@ deploy:
     secure: G02+snlJ+UzJe5mZELB7/UDv6xmKQhwr9w5Wkz/SCCYxVoDusKcZ78mfl/Ao/HhV8XSK5+E0Xe6/fOUZKEJXxqwRtdnpMSlOlPih3dw3BSYcLegSXcEAOR/wrHaCaQrnxb9KBGWA4Yf6pcd8rualhJ+ndzbiFWo+PTVKtYRYw6AU/BKU6sGbyOX1eBq8fC6cUhsEgkt87R+erajLxhSj4ObSPa8bmnKJTZReMSUzC74+250yXWal+oOKUIKp465w8AVjoSCHUD1U6JsbpT9oJewMp5awmJcuQtuTwLsm/qjS2HLGD+GGRP6fFoITWUczrRgLyjcmab2ckNpJUFnD++LsUq+Arwg87V5L71ejDljrmzQb0JQdL/r4cEtkhm00caPHPqvhqaEWgLZf4CiiZC08dEwrbEy5PBGlDKKvJAO6d8EOJ4NDS83g2W4HUlHlk2drk2oWAoPILkjnkp8/q2sFdifOJCVMvqyRtPj7M4EGqBGnMZGGvdbK4oXPpO/PS2YBht+5AkwiYii9PhBoX446Mj6ih0nDGG6cyv3WBHPlP5kI4kBDJVLxzVpFGSPgq0TlJABSOUjd+TlciiQQW+FzFJtZiTZn2HTujY3A8lOPXfHDrHpRcUBoxLfF37ChDwEutdYhHHaCIQdu0aTZMnqR8owIMwJJbcs7I/UC/QM=
   file: build/ipd2*
   on:
-    repo: mlaccetti/ipd2
+    tags: true
