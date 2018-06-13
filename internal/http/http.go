@@ -30,6 +30,7 @@ type Server struct {
 }
 
 type Response struct {
+	HTTP2Support bool `json:"http2"`
 	IP         net.IP `json:"ip"`
 	IPDecimal  uint64 `json:"ip_decimal"`
 	Country    string `json:"country,omitempty"`
@@ -64,19 +65,29 @@ func ipFromRequest(header string, r *http.Request) (net.IP, error) {
 	return ip, nil
 }
 
-func (s *Server) newResponse(r *http.Request) (Response, error) {
+func (s *Server) newResponse(w http.ResponseWriter, r *http.Request) (Response, error) {
 	ip, err := ipFromRequest(s.IPHeader, r)
 	if err != nil {
 		return Response{}, err
 	}
+
 	ipDecimal := iputil.ToDecimal(ip)
 	country, _ := s.db.Country(ip)
 	city, _ := s.db.City(ip)
+
 	var hostname string
 	if s.LookupAddr != nil {
 		hostname, _ = s.LookupAddr(ip)
 	}
+
+	var http2Support = false
+	_, ok := w.(http.Pusher)
+	if ok {
+		http2Support = true
+	}
+
 	return Response{
+		HTTP2Support: http2Support,
 		IP:         ip,
 		IPDecimal:  ipDecimal,
 		Country:    country.Name,
@@ -114,7 +125,7 @@ func (s *Server) CLIHandler(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func (s *Server) CLICountryHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newResponse(r)
+	response, err := s.newResponse(w, r)
 	if err != nil {
 		return internalServerError(err)
 	}
@@ -123,7 +134,7 @@ func (s *Server) CLICountryHandler(w http.ResponseWriter, r *http.Request) *appE
 }
 
 func (s *Server) CLICountryISOHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newResponse(r)
+	response, err := s.newResponse(w, r)
 	if err != nil {
 		return internalServerError(err)
 	}
@@ -132,7 +143,7 @@ func (s *Server) CLICountryISOHandler(w http.ResponseWriter, r *http.Request) *a
 }
 
 func (s *Server) CLICityHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newResponse(r)
+	response, err := s.newResponse(w, r)
 	if err != nil {
 		return internalServerError(err)
 	}
@@ -141,7 +152,7 @@ func (s *Server) CLICityHandler(w http.ResponseWriter, r *http.Request) *appErro
 }
 
 func (s *Server) JSONHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newResponse(r)
+	response, err := s.newResponse(w, r)
 	if err != nil {
 		return internalServerError(err).AsJSON()
 	}
@@ -169,7 +180,7 @@ func (s *Server) PortHandler(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func (s *Server) DefaultHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newResponse(r)
+	response, err := s.newResponse(w, r)
 	if err != nil {
 		return internalServerError(err)
 	}
@@ -177,7 +188,7 @@ func (s *Server) DefaultHandler(w http.ResponseWriter, r *http.Request) *appErro
 	if err != nil {
 		return internalServerError(err)
 	}
-	json, err := json.MarshalIndent(response, "", "  ")
+	jsonResponse, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		return internalServerError(err)
 	}
@@ -189,7 +200,7 @@ func (s *Server) DefaultHandler(w http.ResponseWriter, r *http.Request) *appErro
 	}{
 		response,
 		r.Host,
-		string(json),
+		string(jsonResponse),
 		s.LookupPort != nil,
 	}
 	if err := t.Execute(w, &data); err != nil {
