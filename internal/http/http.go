@@ -294,7 +294,7 @@ func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]stri
 		// Start HTTPS server
 		go func() {
 			log.Printf("Staring HTTPS service on %s ...\n", sslAddr)
-			if err := http.ListenAndServeTLS(sslAddr, "./configs/" + ssl["cert"], "./configs/" + ssl["key"], s.Handler()); err != nil {
+			if err := http.ListenAndServeTLS(sslAddr, ssl["cert"], ssl["key"], s.Handler()); err != nil {
 				errs <- err
 			}
 		}()
