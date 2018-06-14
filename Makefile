@@ -39,7 +39,7 @@ build_windows_%: EXT := .exe
 build_%_amd64: GOARCH := amd64
 
 build_%:
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/$(TARGET)-${TRAVIS_TAG}-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/$(TARGET)-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
 
 databases := GeoLite2-City GeoLite2-Country
 

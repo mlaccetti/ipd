@@ -101,6 +101,8 @@ documentation](https://golang.org/doc/code.html).
 
 ### Usage
 
+Note: the flags can also be replaced with environment variables (in all caps, and underscores for hyphens), for use with Docker, etc.
+
 ```
 $ ipd2 --help
 Usage:
