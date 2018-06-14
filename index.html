@@ -61,34 +61,34 @@ $ bat -print=b {{ .Host }}/ip
 {{ if .Country }}
         <h2>Country lookup</h2>
         <pre>
-$ http {{ .Host }}/country
+$ http https://{{ .Host }}/country
 {{ .Country }}
 
-$ http {{ .Host }}/country-iso
+$ http https://{{ .Host }}/country-iso
 {{ .CountryISO }}</pre>
 {{ end }}
 {{ if .City }}
         <h2>City lookup</h2>
         <pre>
-$ http {{ .Host }}/city
+$ http https://{{ .Host }}/city
 {{ .City }}</pre>
 {{ end }}
       </div>
       <div class="pure-u-1 pure-u-md-1-2">
         <h2>JSON output</h2>
         <pre>
-$ http {{ .Host }}/json
+$ http https://{{ .Host }}/json
 {{ .JSON }}</pre>
         <p>Setting the <code>Accept: application/json</code> header also works as expected.</p>
         <h2>Plain output</h2>
         <p>Always returns the IP address including a trailing newline, regardless of user agent.</p>
         <pre>
-$ http {{ .Host }}/ip
+$ http https://{{ .Host }}/ip
 {{ .IP }}</pre>
 {{ if .Port }}
         <h2>Port testing</h2>
         <pre>
-$ http {{ .Host }}/port/8080
+$ http https://{{ .Host }}/port/8080
 {
   "ip": "{{ .IP }}",
   "port": 8080,
