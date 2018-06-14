@@ -129,7 +129,7 @@ func TestJSONHandlers(t *testing.T) {
 		{s.URL + "/port/foo", `{"error":"Invalid port: 0"}`, 400},
 		{s.URL + "/port/0", `{"error":"Invalid port: 0"}`, 400},
 		{s.URL + "/port/65356", `{"error":"Invalid port: 65356"}`, 400},
-		{s.URL + "/port/31337", `{"ip":"127.0.0.1","port":31337,"reachable":true}`, 200},
+		{s.URL + "/port/31337", `{"http2":false,"ip":"127.0.0.1","port":31337,"reachable":true}`, 200},
 		{s.URL + "/foo", `{"error":"404 page not found"}`, 404},
 	}
 
