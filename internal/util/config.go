@@ -11,6 +11,21 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	flags.BoolP("help", "h", false, "Show this help message")
+	flags.BoolP("verbose", "v", false, "Verbose output (default false")
+	flags.StringP("listen", "l", ":8080", "Listening address")
+	flags.StringP("listen-tls", "s", ":8443", "Listening address for TLS")
+	flags.StringP("tls-key", "k", "", "Path to the TLS key to use (ignored if no TLS listen address is specified)")
+	flags.StringP("tls-cert", "e", "", "Path to the TLS certificate to use (ignored if no TLS listen address is specified)")
+	flags.StringP("country-db", "f", "", "Path to GeoIP country database")
+	flags.StringP("city-db", "c", "", "Path to GeoIP city database")
+	flags.BoolP("port-lookup", "p", true, "Perform port lookups")
+	flags.BoolP("reverse-lookup", "r", true, "Perform reverse hostname lookups")
+	flags.StringP("template", "t", "index.html", "Path to template")
+	flags.StringP("trusted-header", "H", "X-Forwarded-For", "Header with 'real' IP, if present")
+}
+
 type HelpTemplate struct {
 	Flags string
 }
@@ -28,20 +43,7 @@ Help Options:
 
 var buf = new(bytes.Buffer)
 
-func Config() (*viper.Viper ) {
-	_ = *flags.BoolP("help", "h", false, "Show this help message")
-	_ = *flags.BoolP("verbose", "v", false, "Verbose output (default false")
-	_ = *flags.StringP("listen", "l", ":8080", "Listening address")
-	_ = *flags.StringP("listen-tls", "s", ":8443", "Listening address for TLS")
-	_ = *flags.StringP("tls-key", "k", "", "Path to the TLS key to use (ignored if no TLS listen address is specified)")
-	_ = *flags.StringP("tls-cert", "e", "", "Path to the TLS certificate to use (ignored if no TLS listen address is specified)")
-	_ = *flags.StringP("country-db", "f", "", "Path to GeoIP country database")
-	_ = *flags.StringP("city-db", "c", "", "Path to GeoIP city database")
-	_ = *flags.BoolP("port-lookup", "p", true, "Perform port lookups")
-	_ = *flags.BoolP("reverse-lookup", "r", true, "Perform reverse hostname lookups")
-	_ = *flags.StringP("template", "t", "index.html", "Path to template")
-	_ = *flags.StringP("trusted-header", "H", "X-Forwarded-For", "Header with 'real' IP, if present")
-
+func Config() (*viper.Viper) {
 	v := viper.New()
 
 	flags.CommandLine.SortFlags = false
