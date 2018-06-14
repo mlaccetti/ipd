@@ -99,7 +99,7 @@ func TestDisabledHandlers(t *testing.T) {
 		{s.URL + "/country", "404 page not found", 404},
 		{s.URL + "/country-iso", "404 page not found", 404},
 		{s.URL + "/city", "404 page not found", 404},
-		{s.URL + "/json", `{"ip":"127.0.0.1","ip_decimal":2130706433}`, 200},
+		{s.URL + "/json", `{"http2":false,"ip":"127.0.0.1","ip_decimal":2130706433}`, 200},
 	}
 
 	for _, tt := range tests {
@@ -125,7 +125,7 @@ func TestJSONHandlers(t *testing.T) {
 		out    string
 		status int
 	}{
-		{s.URL, `{"ip":"127.0.0.1","ip_decimal":2130706433,"country":"Elbonia","country_iso":"EB","city":"Bornyasherk","hostname":"localhost"}`, 200},
+		{s.URL, `{"http2":false,"ip":"127.0.0.1","ip_decimal":2130706433,"country":"Elbonia","country_iso":"EB","city":"Bornyasherk","hostname":"localhost"}`, 200},
 		{s.URL + "/port/foo", `{"error":"Invalid port: 0"}`, 400},
 		{s.URL + "/port/0", `{"error":"Invalid port: 0"}`, 400},
 		{s.URL + "/port/65356", `{"error":"Invalid port: 65356"}`, 400},
