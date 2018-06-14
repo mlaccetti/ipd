@@ -1,9 +1,9 @@
-# ipd
+# ipd2
 
-[![Build Status](https://travis-ci.org/mpolden/ipd.svg)](https://travis-ci.org/mpolden/ipd)
+[![Build Status](https://travis-ci.org/mlaccetti/ipd2.svg?branch=master)](https://travis-ci.org/mlaccetti/ipd2/)
 
 A simple service for looking up your IP address. This is the code that powers
-https://ifconfig2.co.
+https://ifconfig2.co. A fork of [ipd](https://github.com/mpolden/ipd).
 
 ## Usage
 
@@ -44,6 +44,7 @@ As JSON:
 ```
 $ curl -H 'Accept: application/json' ifconfig2.co  # or curl ifconfig2.co/json
 {
+  "http2": false,
   "city": "Bornyasherk",
   "country": "Elbonia",
   "country_iso": "EB",
@@ -74,7 +75,7 @@ force IPv4 or IPv6 lookup.
 * Easy to remember domain name
 * Fast
 * Supports IPv6
-* Supports HTTPS
+* Supports HTTP/2 (and thus requires HTTPS)
 * Supports common command-line clients (e.g. `curl`, `httpie`, `wget` and `fetch`)
 * JSON output
 * Country and city lookup using the MaxMind GeoIP database
@@ -86,6 +87,7 @@ force IPv4 or IPv6 lookup.
 * To scratch an itch
 * An excuse to use Go for something
 * Faster than ifconfig.me and has IPv6 support
+* Check for HTTP/2 support
 
 ## Building
 
@@ -100,19 +102,24 @@ documentation](https://golang.org/doc/code.html).
 ### Usage
 
 ```
-$ ipd -h
+$ ipd2 --help
 Usage:
-  ipd [OPTIONS]
+  ipd2 [OPTIONS]
 
 Application Options:
-  -f, --country-db=FILE        Path to GeoIP country database
-  -c, --city-db=FILE           Path to GeoIP city database
-  -l, --listen=ADDR            Listening address (default: :8080)
-  -r, --reverse-lookup         Perform reverse hostname lookups
-  -p, --port-lookup            Enable port lookup
-  -t, --template=FILE          Path to template (default: index.html)
-  -H, --trusted-header=NAME    Header to trust for remote IP, if present (e.g. X-Real-IP)
+  -v, --verbose                 Verbose output (default false
+  -l, --listen string           Listening address (default ":8080")
+  -s, --listen-tls string       Listening address for TLS (default ":8443")
+  -k, --tls-key string          Path to the TLS key to use (ignored if no TLS listen address is specified)
+  -e, --tls-cert string         Path to the TLS certificate to use (ignored if no TLS listen address is specified)
+  -f, --country-db string       Path to GeoIP country database
+  -c, --city-db string          Path to GeoIP city database
+  -p, --port-lookup             Perform port lookups (default true)
+  -r, --reverse-lookup          Perform reverse hostname lookups (default true)
+  -t, --template string         Path to template (default "index.html")
+  -H, --trusted-header string   Header with 'real' IP, if present (default "X-Forwarded-For")
+
 
 Help Options:
-  -h, --help                   Show this help message
+  -h, --help                    Show this help message
 ```
