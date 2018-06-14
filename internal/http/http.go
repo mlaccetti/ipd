@@ -30,19 +30,20 @@ type Server struct {
 }
 
 type Response struct {
-	HTTP2Support bool `json:"http2"`
-	IP         net.IP `json:"ip"`
-	IPDecimal  uint64 `json:"ip_decimal"`
-	Country    string `json:"country,omitempty"`
-	CountryISO string `json:"country_iso,omitempty"`
-	City       string `json:"city,omitempty"`
-	Hostname   string `json:"hostname,omitempty"`
+	HTTP2Support bool   `json:"http2"`
+	IP           net.IP `json:"ip"`
+	IPDecimal    uint64 `json:"ip_decimal"`
+	Country      string `json:"country,omitempty"`
+	CountryISO   string `json:"country_iso,omitempty"`
+	City         string `json:"city,omitempty"`
+	Hostname     string `json:"hostname,omitempty"`
 }
 
 type PortResponse struct {
-	IP        net.IP `json:"ip"`
-	Port      uint64 `json:"port"`
-	Reachable bool   `json:"reachable"`
+	HTTP2Support bool   `json:"http2"`
+	IP           net.IP `json:"ip"`
+	Port         uint64 `json:"port"`
+	Reachable    bool   `json:"reachable"`
 }
 
 func New(db database.Client) *Server {
@@ -80,7 +81,7 @@ func (s *Server) newResponse(w http.ResponseWriter, r *http.Request) (Response, 
 		hostname, _ = s.LookupAddr(ip)
 	}
 
-	var http2Support = false
+	http2Support := false
 	_, ok := w.(http.Pusher)
 	if ok {
 		http2Support = true
@@ -88,30 +89,40 @@ func (s *Server) newResponse(w http.ResponseWriter, r *http.Request) (Response, 
 
 	return Response{
 		HTTP2Support: http2Support,
-		IP:         ip,
-		IPDecimal:  ipDecimal,
-		Country:    country.Name,
-		CountryISO: country.ISO,
-		City:       city,
-		Hostname:   hostname,
+		IP:           ip,
+		IPDecimal:    ipDecimal,
+		Country:      country.Name,
+		CountryISO:   country.ISO,
+		City:         city,
+		Hostname:     hostname,
 	}, nil
 }
 
-func (s *Server) newPortResponse(r *http.Request) (PortResponse, error) {
+func (s *Server) newPortResponse(w http.ResponseWriter, r *http.Request) (PortResponse, error) {
+	http2Support := false
+	_, ok := w.(http.Pusher)
+	if ok {
+		http2Support = true
+	}
+
 	lastElement := filepath.Base(r.URL.Path)
 	port, err := strconv.ParseUint(lastElement, 10, 16)
+
 	if err != nil || port < 1 || port > 65355 {
 		return PortResponse{Port: port}, fmt.Errorf("invalid port: %d", port)
 	}
+
 	ip, err := ipFromRequest(s.IPHeader, r)
 	if err != nil {
 		return PortResponse{Port: port}, err
 	}
+
 	err = s.LookupPort(ip, port)
 	return PortResponse{
-		IP:        ip,
-		Port:      port,
-		Reachable: err == nil,
+		HTTP2Support: http2Support,
+		IP:           ip,
+		Port:         port,
+		Reachable:    err == nil,
 	}, nil
 }
 
@@ -166,7 +177,7 @@ func (s *Server) JSONHandler(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func (s *Server) PortHandler(w http.ResponseWriter, r *http.Request) *appError {
-	response, err := s.newPortResponse(r)
+	response, err := s.newPortResponse(w, r)
 	if err != nil {
 		return badRequest(err).WithMessage(fmt.Sprintf("Invalid port: %d", response.Port)).AsJSON()
 	}
