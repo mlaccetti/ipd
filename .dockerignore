@@ -1,0 +1,5 @@
+build/
+certs/
+data/
+helm-chart/
+vendor/

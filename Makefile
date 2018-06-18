@@ -12,11 +12,6 @@ fmt:
 	go fmt ./...
 	@echo ""
 
-test: geoip-download certs
-	@echo "Running tests"
-	go test ./...
-	@echo ""
-
 vet:
 	@echo "Vetting stuff"
 	go vet ./...
@@ -26,21 +21,7 @@ deps:
 	@echo "Ensuring dependencies are in place"
 	dep ensure
 	@echo ""
-
-build: build_darwin_amd64 \
-	build_linux_amd64 \
-	build_windows_amd64
-
-build_darwin_%: GOOS := darwin
-build_linux_%: GOOS := linux
-build_windows_%: GOOS := windows
-build_windows_%: EXT := .exe
-
-build_%_amd64: GOARCH := amd64
-
-build_%:
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o build/$(TARGET)-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
-
+	
 databases := GeoLite2-City GeoLite2-Country
 
 $(databases):
@@ -61,3 +42,25 @@ certs:
 		-newkey rsa:4096 -nodes -keyout $(PWD)/certs/test-localhost.key \
 		-x509 -days 365 -out $(PWD)/certs/test-localhost.crt
 	@echo ""
+
+test: geoip-download certs
+	@echo "Running tests"
+	go test ./...
+	@echo ""
+
+build: build_darwin_amd64 \
+	build_linux_amd64 \
+	build_windows_amd64
+
+build_darwin_%: GOOS := darwin
+build_linux_%: GOOS := linux
+build_windows_%: GOOS := windows
+build_windows_%: EXT := .exe
+
+build_%_amd64: GOARCH := amd64
+
+build_%:
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -a -installsuffix cgo -o build/$(TARGET)-${TRAVIS_TAG}-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
+	
+docker:
+	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --tag mlaccetti/ipd2:${TRAVIS_TAG} .
