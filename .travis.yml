@@ -13,13 +13,19 @@ jobs:
   include:
   - stage: build
     script:
-    - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-    - make
+    - make docker-build
+  - stage: docker
+    if: tag IS present
+    script:
+    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+    - make docker-release
+    - docker push mlaccetti/ipd2:${TRAVIS_TAG}
   - stage: deploy
     if: tag IS present
     script:
     - git config --local user.name "Michael Laccetti"
     - git config --local user.email "michael@laccetti.com"
+    - make release
     deploy:
       provider: releases
       api_key:
@@ -27,9 +33,6 @@ jobs:
       skip_cleanup: true
       file_glob: true
       file: build/ipd2*
-  - stage: docker
-    if: tag IS present
-    script:
-    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-    - make docker
-    - docker push mlaccetti/ipd2:${TRAVIS_TAG}
+      on:
+        tags: true
+

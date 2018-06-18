@@ -9,7 +9,7 @@ RUN \
   make deps
 RUN make
 
-FROM scratch
+FROM scratch as runtime
 ARG TRAVIS_TAG
 COPY --from=build /go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-linux_amd64 /ipd2
 ENTRYPOINT ["/ipd2"]

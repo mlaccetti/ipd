@@ -5,6 +5,12 @@ ifeq ($(OS),Linux)
 	TAR_OPTS := --wildcards
 endif
 
+guard-%:
+	@ if [ "${${*}}" = "" ]; then \
+		echo "Environment variable $* not set"; \
+		exit 0; \
+	fi
+
 all: deps test vet build
 
 fmt:
@@ -61,6 +67,18 @@ build_%_amd64: GOARCH := amd64
 
 build_%:
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -a -installsuffix cgo -o build/$(TARGET)-${TRAVIS_TAG}-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
-	
-docker:
-	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --tag mlaccetti/ipd2:${TRAVIS_TAG} .
+
+docker-build:
+	@echo "Building Docker image for compiling ipd2"
+	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target build --tag mlaccetti/ipd2:${TRAVIS_TAG}-build .
+
+docker-release:  guard-TRAVIS_TAG
+	@echo "Building Docker image for release"
+	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target runtime --tag mlaccetti/ipd2:${TRAVIS_TAG} .
+
+release: docker-build
+	export CONTAINER_ID=`docker inspect --format="{{.Id}}" mlaccetti/ipd2:${TRAVIS_TAG}-build |sed 's/sha256://'` ;\
+	echo "Copying files from Docker container ${CONTAINER_ID} for release" ;\
+	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-darwin_amd64 build/ipd2-${TRAVIS_TAG}-darwin_amd64 ;\
+	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-linux_amd64 build/ipd2-${TRAVIS_TAG}-linux_amd64 ;\
+	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-windows_amd64 build/ipd2-${TRAVIS_TAG}-windows_amd64
