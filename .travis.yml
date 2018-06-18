@@ -25,7 +25,8 @@ stages:
 jobs:
   include:
     - stage: build
-      script: make
+      script:
+      - make
     - stage: deploy
       script: skip
       deploy:
