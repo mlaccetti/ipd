@@ -9,13 +9,6 @@ language: go
 go:
 - 1.10.x
 
-stages:
-- build
-- deploy
-  if: tag IS present
-- docker
-  if: tag IS present
-
 jobs:
   include:
   - stage: build
@@ -23,6 +16,7 @@ jobs:
     - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
     - make
   - stage: deploy
+    if: tag IS present
     script:
     - git config --local user.name "Michael Laccetti"
     - git config --local user.email "michael@laccetti.com"
@@ -34,6 +28,7 @@ jobs:
       file_glob: true
       file: build/ipd2*
   - stage: docker
+    if: tag IS present
     script:
     - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
     - make docker
