@@ -13,6 +13,7 @@ jobs:
   include:
   - stage: build
     script:
+    - if [ -z "$TRAVIS_TAG" ]; then; export TRAVIS_TAG=dev
     - make docker-build
   - stage: docker
     if: tag IS present
