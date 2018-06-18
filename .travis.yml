@@ -15,16 +15,18 @@ before_deploy:
 - git config --local user.name "Michael Laccetti"
 - git config --local user.email "michael@laccetti.com"
 
+stages:
+  - build
+  - deploy
+    if: tag IS present
+  - docker
+    if: tag IS present
+
 jobs:
   include:
-    - stage: Docker Release
-      if: tag IS present
-      script:
-      - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-      - make docker
-      - docker push mlaccetti/ipd2:${TRAVIS_TAG}
-    - stage: GitHub Release
-      if: tag IS present
+    - stage: build
+      script: make
+    - stage: deploy
       script: skip
       deploy:
         provider: releases
@@ -33,3 +35,8 @@ jobs:
         skip_cleanup: true
         file_glob: true
         file: build/ipd2*
+    - stage: docker
+      script:
+      - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+      - make docker
+      - docker push mlaccetti/ipd2:${TRAVIS_TAG}
