@@ -72,13 +72,16 @@ docker-build:
 	@echo "Building Docker image for compiling ipd2"
 	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target build --tag mlaccetti/ipd2:${TRAVIS_TAG}-build .
 
-docker-release:  guard-TRAVIS_TAG
+docker-release:	guard-TRAVIS_TAG
 	@echo "Building Docker image for release"
 	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target runtime --tag mlaccetti/ipd2:${TRAVIS_TAG} .
 
 release: docker-build
-	export CONTAINER_ID=`docker inspect --format="{{.Id}}" mlaccetti/ipd2:${TRAVIS_TAG}-build |sed 's/sha256://'` ;\
-	echo "Copying files from Docker container ${CONTAINER_ID} for release" ;\
-	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-darwin_amd64 build/ipd2-${TRAVIS_TAG}-darwin_amd64 ;\
-	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-linux_amd64 build/ipd2-${TRAVIS_TAG}-linux_amd64 ;\
-	docker cp ${CONTAINER_ID}:/go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-windows_amd64 build/ipd2-${TRAVIS_TAG}-windows_amd64
+	set -e ;\
+	CONTAINER_ID=$$(docker run -d mlaccetti/ipd2:$$TRAVIS_TAG-build /bin/false) ;\
+	echo "Copying files from Docker container $$CONTAINER_ID for release" ;\
+	rm -fr build ;\
+	mkdir -p build ;\
+	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-darwin_amd64 build/ipd2-$$TRAVIS_TAG-darwin_amd64 ;\
+	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-linux_amd64 build/ipd2-$$TRAVIS_TAG-linux_amd64 ;\
+	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-windows_amd64.exe build/ipd2-$$TRAVIS_TAG-windows_amd64.exe
