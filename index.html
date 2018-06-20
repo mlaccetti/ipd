@@ -44,19 +44,19 @@
       <div class="pure-u-1 pure-u-md-1-2">
         <h2>CLI examples</h2>
         <pre>
-$ curl {{ .Host }}
+$ curl https://{{ .Host }}
 {{ .IP }}
 
-$ http -b {{ .Host }}
+$ http -b https://{{ .Host }}
 {{ .IP }}
 
-$ wget -qO- {{ .Host }}
+$ wget -qO- https://{{ .Host }}
 {{ .IP }}
 
 $ fetch -qo- https://{{ .Host }}
 {{ .IP }}
 
-$ bat -print=b {{ .Host }}/ip
+$ bat -print=b https://{{ .Host }}/ip
 {{ .IP }}</pre>
 {{ if .Country }}
         <h2>Country lookup</h2>
