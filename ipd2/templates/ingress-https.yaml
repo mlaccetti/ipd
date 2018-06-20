@@ -4,7 +4,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-https
   labels:
     app: {{ template "ipd2.name" . }}
     chart: {{ template "ipd2.chart" . }}
