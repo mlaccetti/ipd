@@ -12,21 +12,17 @@ go:
 jobs:
   include:
   - stage: build
+    if: branch IS present
     script:
     - if [ -z "$TRAVIS_TAG" ]; then export TRAVIS_TAG=dev; fi
     - make docker-build
-  - stage: docker
-    if: tag IS present
-    script:
-    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-    - make docker-release
-    - docker push mlaccetti/ipd2:${TRAVIS_TAG}
   - stage: deploy
     if: tag IS present
     script:
     - git config --local user.name "Michael Laccetti"
     - git config --local user.email "michael@laccetti.com"
-    - make release
+    - make docker-release release
+    - docker push mlaccetti/ipd2:${TRAVIS_TAG}
     deploy:
       provider: releases
       api_key:
@@ -36,4 +32,3 @@ jobs:
       file: build/ipd2*
       on:
         tags: true
-
