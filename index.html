@@ -44,51 +44,51 @@
       <div class="pure-u-1 pure-u-md-1-2">
         <h2>CLI examples</h2>
         <pre>
-$ curl https://{{ .Host }}
+$ curl {{ .Scheme }}://{{ .Host }}
 {{ .IP }}
 
-$ http -b https://{{ .Host }}
+$ http -b {{ .Scheme }}://{{ .Host }}
 {{ .IP }}
 
-$ wget -qO- https://{{ .Host }}
+$ wget -qO- {{ .Scheme }}://{{ .Host }}
 {{ .IP }}
 
-$ fetch -qo- https://{{ .Host }}
+$ fetch -qo- {{ .Scheme }}://{{ .Host }}
 {{ .IP }}
 
-$ bat -print=b https://{{ .Host }}/ip
+$ bat -print=b {{ .Scheme }}://{{ .Host }}/ip
 {{ .IP }}</pre>
 {{ if .Country }}
         <h2>Country lookup</h2>
         <pre>
-$ http https://{{ .Host }}/country
+$ http {{ .Scheme }}://{{ .Host }}/country
 {{ .Country }}
 
-$ http https://{{ .Host }}/country-iso
+$ http {{ .Scheme }}://{{ .Host }}/country-iso
 {{ .CountryISO }}</pre>
 {{ end }}
 {{ if .City }}
         <h2>City lookup</h2>
         <pre>
-$ http https://{{ .Host }}/city
+$ http {{ .Scheme }}://{{ .Host }}/city
 {{ .City }}</pre>
 {{ end }}
       </div>
       <div class="pure-u-1 pure-u-md-1-2">
         <h2>JSON output</h2>
         <pre>
-$ http https://{{ .Host }}/json
+$ http {{ .Scheme }}://{{ .Host }}/json
 {{ .JSON }}</pre>
         <p>Setting the <code>Accept: application/json</code> header also works as expected.</p>
         <h2>Plain output</h2>
         <p>Always returns the IP address including a trailing newline, regardless of user agent.</p>
         <pre>
-$ http https://{{ .Host }}/ip
+$ http {{ .Scheme }}://{{ .Host }}/ip
 {{ .IP }}</pre>
 {{ if .Port }}
         <h2>Port testing</h2>
         <pre>
-$ http https://{{ .Host }}/port/8080
+$ http {{ .Scheme }}://{{ .Host }}/port/8080
 {
   "ip": "{{ .IP }}",
   "port": 8080,
