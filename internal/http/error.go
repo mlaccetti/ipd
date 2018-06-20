@@ -1,6 +1,9 @@
 package http
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type appError struct {
 	Error       error
@@ -12,7 +15,7 @@ type appError struct {
 func internalServerError(err error) *appError {
 	return &appError{
 		Error:   err,
-		Message: "Internal server error",
+		Message: fmt.Sprintf("Internal server error: %v", err),
 		Code:    http.StatusInternalServerError,
 	}
 }
