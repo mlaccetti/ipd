@@ -19,13 +19,38 @@ spec:
         app: {{ template "ipd2.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.service.https.enabled }}
+      volumes:
+        - name: tls-secret
+          secret:
+            secretName: {{ .Values.ingress.https.tls.secretName }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --verbose=true
+            - --city-db=/data/city.mmdb
+            - --country-db/data/country.mmdb
+            - --listen=:{{ .Values.service.http.port }}
+            {{- if .Values.service.https.enabled }}
+            - --listen-tls=:{{ .Values.service.https.port }}
+            - --tls-key=/tls/tls.key
+            - --tls-cert=/tls/tls.cert
+            {{- end }}
+          {{- if .Values.service.https.enabled }}
+          volumeMounts:
+            - name: tls-secret
+              mountPath: "tls"
+              readOnly: true
+          {{- end }}
           ports:
             - name: http
               containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
               protocol: TCP
           livenessProbe:
             httpGet:

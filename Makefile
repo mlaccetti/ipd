@@ -85,3 +85,7 @@ release: docker-build
 	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-darwin_amd64 build/ipd2-$$TRAVIS_TAG-darwin_amd64 ;\
 	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-linux_amd64 build/ipd2-$$TRAVIS_TAG-linux_amd64 ;\
 	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-windows_amd64.exe build/ipd2-$$TRAVIS_TAG-windows_amd64.exe
+
+clean:
+	@echo "Cleaning up generated folders/files."
+	rm -fr build certs data

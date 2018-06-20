@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "ipd2.fullname" . }}
+  name: {{ template "ipd2.fullname" . }}-http
   labels:
     app: {{ template "ipd2.name" . }}
     chart: {{ template "ipd2.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.http.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.service.http.port }}
       targetPort: http
       protocol: TCP
       name: http

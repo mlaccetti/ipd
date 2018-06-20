@@ -1,30 +1,20 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.ingress.http.enabled -}}
 {{- $fullName := include "ipd2.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-http
   labels:
     app: {{ template "ipd2.name" . }}
     chart: {{ template "ipd2.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-{{- with .Values.ingress.annotations }}
+{{- with .Values.ingress.http.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-{{- if .Values.ingress.tls }}
-  tls:
-  {{- range .Values.ingress.tls }}
-    - hosts:
-      {{- range .hosts }}
-        - {{ . }}
-      {{- end }}
-      secretName: {{ .secretName }}
-  {{- end }}
-{{- end }}
   rules:
   {{- range .Values.ingress.hosts }}
     - host: {{ . }}
@@ -32,7 +22,7 @@ spec:
         paths:
           - path: {{ $ingressPath }}
             backend:
-              serviceName: {{ $fullName }}
+              serviceName: {{ $fullName }}-http
               servicePort: http
   {{- end }}
 {{- end }}

@@ -1,0 +1,41 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: websites-tls
+  namespace: website
+spec:
+  secretName: websites-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: 'laccetti.com'
+  dnsNames:
+  - laccetti.ca
+  - www.laccetti.ca
+  - laccetti.com
+  - www.laccetti.com
+  - jesslaccetti.ca
+  - jesslaccetti.com
+  - jesslaccetti.co.uk
+  - lobita.ca
+  - www.jesslaccetti.ca
+  - www.jesslaccetti.com
+  - www.jesslaccetti.co.uk
+  - www.lobita.ca
+  acme:
+    config:
+    - dns01:
+        provider: letsencrypt-prod
+      domains:
+      - laccetti.ca
+      - www.laccetti.ca
+      - laccetti.com
+      - www.laccetti.com
+      - jesslaccetti.ca
+      - jesslaccetti.com
+      - jesslaccetti.co.uk
+      - lobita.ca
+      - www.jesslaccetti.ca
+      - www.jesslaccetti.com
+      - www.jesslaccetti.co.uk
+      - www.lobita.ca

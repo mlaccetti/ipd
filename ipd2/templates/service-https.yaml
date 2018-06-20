@@ -1,0 +1,21 @@
+{{- if .Values.service.https.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "ipd2.fullname" . }}-https
+  labels:
+    app: {{ template "ipd2.name" . }}
+    chart: {{ template "ipd2.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.https.type }}
+  ports:
+    - port: {{ .Values.service.https.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "ipd2.name" . }}
+    release: {{ .Release.Name }}
+{{- end }}

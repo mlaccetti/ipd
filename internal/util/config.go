@@ -13,7 +13,7 @@ import (
 
 func init() {
 	flags.BoolP("help", "h", false, "Show this help message")
-	flags.BoolP("verbose", "v", false, "Verbose output (default false")
+	flags.BoolP("verbose", "v", false, "Verbose output (default false)")
 	flags.StringP("listen", "l", ":8080", "Listening address")
 	flags.StringP("listen-tls", "s", ":8443", "Listening address for TLS")
 	flags.StringP("tls-key", "k", "", "Path to the TLS key to use (ignored if no TLS listen address is specified)")

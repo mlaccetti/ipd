@@ -1,0 +1,32 @@
+service:
+  https:
+    enabled: true
+
+ingress:
+  hosts:
+    - ifconfig2.ca
+    - ifconfig2.co
+    - ifconfig2.com
+  path: /
+  http:
+    enabled: true
+  https:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    tls:
+      secretName: ifconfig-tls
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
