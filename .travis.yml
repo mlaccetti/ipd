@@ -21,6 +21,7 @@ jobs:
     script:
     - git config --local user.name "Michael Laccetti"
     - git config --local user.email "michael@laccetti.com"
+    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
     - make docker-release release
     - docker push mlaccetti/ipd2:${TRAVIS_TAG}
     deploy:
