@@ -32,12 +32,12 @@ spec:
           args:
             - --verbose=true
             - --city-db=/data/city.mmdb
-            - --country-db/data/country.mmdb
+            - --country-db=/data/country.mmdb
             - --listen=:{{ .Values.service.http.port }}
             {{- if .Values.service.https.enabled }}
             - --listen-tls=:{{ .Values.service.https.port }}
             - --tls-key=/tls/tls.key
-            - --tls-cert=/tls/tls.cert
+            - --tls-cert=/tls/tls.crt
             {{- end }}
           {{- if .Values.service.https.enabled }}
           volumeMounts:
@@ -52,14 +52,6 @@ spec:
             - name: https
               containerPort: 443
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
