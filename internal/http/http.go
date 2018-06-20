@@ -195,28 +195,35 @@ func (s *Server) DefaultHandler(w http.ResponseWriter, r *http.Request) *appErro
 	if err != nil {
 		return internalServerError(err)
 	}
+
 	t, err := template.ParseFiles(s.Template)
 	if err != nil {
 		return internalServerError(err)
 	}
+
 	jsonResponse, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		return internalServerError(err)
 	}
+
 	var data = struct {
 		Response
 		Host string
+		Scheme string
 		JSON string
 		Port bool
 	}{
 		response,
 		r.Host,
+		r.URL.Scheme,
 		string(jsonResponse),
 		s.LookupPort != nil,
 	}
+
 	if err := t.Execute(w, &data); err != nil {
 		return internalServerError(err)
 	}
+
 	return nil
 }
 
@@ -261,6 +268,14 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func SetScheme(scheme string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.URL.Scheme = scheme
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *Server) Handler() http.Handler {
 	r := NewRouter()
 
@@ -296,7 +311,7 @@ func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]stri
 	go func() {
 		log.Printf("Staring HTTP service on %s ...\n", addr)
 
-		if err := http.ListenAndServe(addr, s.Handler()); err != nil {
+		if err := http.ListenAndServe(addr, SetScheme("http", s.Handler())); err != nil {
 			errs <- err
 		}
 	}()
@@ -305,7 +320,7 @@ func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]stri
 		// Start HTTPS server
 		go func() {
 			log.Printf("Staring HTTPS service on %s ...\n", sslAddr)
-			if err := http.ListenAndServeTLS(sslAddr, ssl["cert"], ssl["key"], s.Handler()); err != nil {
+			if err := http.ListenAndServeTLS(sslAddr, ssl["cert"], ssl["key"], SetScheme("https", s.Handler())); err != nil {
 				errs <- err
 			}
 		}()
