@@ -12,7 +12,7 @@ go:
 jobs:
   include:
   - stage: build
-    if: branch IS present
+    if: (branch IS present) AND (tag IS blank)
     script:
     - if [ -z "$TRAVIS_TAG" ]; then export TRAVIS_TAG=dev; fi
     - make docker-build
