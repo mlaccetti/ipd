@@ -11,6 +11,7 @@ RUN make
 
 FROM scratch as runtime
 ARG TRAVIS_TAG
+COPY --from=build /go/src/github.com/mlaccetti/ipd2/index.html /index.html
 COPY --from=build /go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-linux_amd64 /ipd2
 COPY --from=build /go/src/github.com/mlaccetti/ipd2/data/city.mmdb /data/city.mmdb
 COPY --from=build /go/src/github.com/mlaccetti/ipd2/data/country.mmdb /data/country.mmdb
