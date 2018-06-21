@@ -12,9 +12,9 @@ spec:
   type: {{ .Values.service.https.type }}
   ports:
     - port: {{ .Values.service.https.port }}
-      targetPort: http
+      targetPort: https
       protocol: TCP
-      name: http
+      name: https
   selector:
     app: {{ template "ipd2.name" . }}
     release: {{ .Release.Name }}
