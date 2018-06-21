@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"path/filepath"
 	"strconv"
 
@@ -268,9 +269,16 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SetScheme(scheme string, next http.Handler) http.Handler {
+func GlobalMiddleware(scheme string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Scheme = scheme
+
+		requestDump, err := httputil.DumpRequest(r, false)
+		if err != nil {
+			log.Printf("Could not get HTTP request: %v", err)
+		} else {
+			log.Println(string(requestDump))
+		}
 
 		next.ServeHTTP(w, r)
 	})
@@ -311,7 +319,7 @@ func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]stri
 	go func() {
 		log.Printf("Staring HTTP service on %s ...\n", addr)
 
-		if err := http.ListenAndServe(addr, SetScheme("http", s.Handler())); err != nil {
+		if err := http.ListenAndServe(addr, GlobalMiddleware("http", s.Handler())); err != nil {
 			errs <- err
 		}
 	}()
@@ -320,7 +328,7 @@ func (s *Server) ListenAndServe(addr string, sslAddr string, ssl map[string]stri
 		// Start HTTPS server
 		go func() {
 			log.Printf("Staring HTTPS service on %s ...\n", sslAddr)
-			if err := http.ListenAndServeTLS(sslAddr, ssl["cert"], ssl["key"], SetScheme("https", s.Handler())); err != nil {
+			if err := http.ListenAndServeTLS(sslAddr, ssl["cert"], ssl["key"], GlobalMiddleware("https", s.Handler())); err != nil {
 				errs <- err
 			}
 		}()
