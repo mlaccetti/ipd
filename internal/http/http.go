@@ -10,6 +10,7 @@ import (
 	"net/http/httputil"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/mlaccetti/ipd2/internal/iputil"
 	"github.com/mlaccetti/ipd2/internal/iputil/database"
@@ -273,11 +274,13 @@ func GlobalMiddleware(scheme string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Scheme = scheme
 
-		requestDump, err := httputil.DumpRequest(r, false)
-		if err != nil {
-			log.Printf("Could not get HTTP request: %v", err)
-		} else {
-			log.Println(string(requestDump))
+		if !strings.Contains(r.URL.Path, "/favicon.ico") {
+			requestDump, err := httputil.DumpRequest(r, false)
+			if err != nil {
+				log.Printf("Could not get HTTP request: %v", err)
+			} else {
+				log.Println(string(requestDump))
+			}
 		}
 
 		next.ServeHTTP(w, r)
