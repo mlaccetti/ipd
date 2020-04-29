@@ -1,6 +1,6 @@
-# ipd2
+# echoip
 
-[![Build Status](https://travis-ci.org/mlaccetti/ipd2.svg?branch=master)](https://travis-ci.org/mlaccetti/ipd2/)
+[![Build Status](https://travis-ci.org/mpolden/echoip.svg)](https://travis-ci.org/mpolden/echoip)
 
 A simple service for looking up your IP address. This is the code that powers
 https://ifconfig2.co. A fork of [ipd](https://github.com/mpolden/ipd).
@@ -37,6 +37,9 @@ EB
 
 $ curl ifconfig2.co/city
 Bornyasherk
+
+$ curl ifconfig.co/asn
+AS59795
 ```
 
 As JSON:
@@ -49,7 +52,9 @@ $ curl -H 'Accept: application/json' ifconfig2.co  # or curl ifconfig2.co/json
   "country": "Elbonia",
   "country_iso": "EB",
   "ip": "127.0.0.1",
-  "ip_decimal": 2130706433
+  "ip_decimal": 2130706433,
+  "asn": "AS59795",
+  "asn_org": "Hosting4Real"
 }
 ```
 
@@ -67,9 +72,6 @@ $ curl ifconfig2.co/port/80
 Pass the appropriate flag (usually `-4` and `-6`) to your client to switch
 between IPv4 and IPv6 lookup.
 
-The subdomains https://v4.ifconfig2.co and https://v6.ifconfig2.co can be used to
-force IPv4 or IPv6 lookup.
-
 ## Features
 
 * Easy to remember domain name
@@ -78,7 +80,7 @@ force IPv4 or IPv6 lookup.
 * Supports HTTP/2 (and thus requires HTTPS)
 * Supports common command-line clients (e.g. `curl`, `httpie`, `wget` and `fetch`)
 * JSON output
-* Country and city lookup using the MaxMind GeoIP database
+* ASN, country and city lookup using the MaxMind GeoIP database
 * Port testing
 * Open source under the [BSD 3-Clause license](https://opensource.org/licenses/BSD-3-Clause)
 
@@ -94,32 +96,40 @@ force IPv4 or IPv6 lookup.
 Compiling requires the [Golang compiler](https://golang.org/) to be installed.
 This package can be installed with `go get`:
 
-`go get github.com/mlaccetti/ipd2/...`
+`go get github.com/mpolden/echoip/...`
 
 For more information on building a Go project, see the [official Go
 documentation](https://golang.org/doc/code.html).
+
+## Docker image
+
+A Docker image is available on [Docker
+Hub](https://hub.docker.com/r/mpolden/echoip), which can be downloaded with:
+
+`docker pull mpolden/echoip`
 
 ### Usage
 
 Note: the flags can also be replaced with environment variables (in all caps, and underscores for hyphens), for use with Docker, etc.
 
 ```
-$ ipd2 --help
+$ echoip -h
 Usage:
-  ipd2 [OPTIONS]
+  echoip [OPTIONS]
 
 Application Options:
-  -v, --verbose                 Verbose output (default false
-  -l, --listen string           Listening address (default ":8080")
+  -f, --country-db=FILE        Path to GeoIP country database
+  -c, --city-db=FILE           Path to GeoIP city database
+  -a, --asn-db=FILE            Path to GeoIP ASN database
+  -l, --listen=ADDR            Listening address (default: :8080)
+  -r, --reverse-lookup         Perform reverse hostname lookups
+  -p, --port-lookup            Enable port lookup
+  -t, --template=FILE          Path to template (default: index.html)
+  -H, --trusted-header=NAME    Header to trust for remote IP, if present (e.g. X-Real-IP)
   -s, --listen-tls string       Listening address for TLS (default ":8443")
   -k, --tls-key string          Path to the TLS key to use (ignored if no TLS listen address is specified)
   -e, --tls-cert string         Path to the TLS certificate to use (ignored if no TLS listen address is specified)
-  -f, --country-db string       Path to GeoIP country database
-  -c, --city-db string          Path to GeoIP city database
-  -p, --port-lookup             Perform port lookups (default true)
-  -r, --reverse-lookup          Perform reverse hostname lookups (default true)
-  -t, --template string         Path to template (default "index.html")
-  -H, --trusted-header string   Header with 'real' IP, if present (default "X-Forwarded-For")
+  -l, --listen string           Listening address (default ":8080")
 
 
 Help Options:

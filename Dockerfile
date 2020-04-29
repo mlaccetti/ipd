@@ -1,19 +1,17 @@
-FROM golang:1.10.3-stretch as build
-ARG TRAVIS_TAG
-WORKDIR /go/src/github.com/mlaccetti/ipd2
-COPY cmd/ /go/src/github.com/mlaccetti/ipd2/cmd/
-COPY internal/ /go/src/github.com/mlaccetti/ipd2/internal/
-COPY Makefile Gopkg.* index.html /go/src/github.com/mlaccetti/ipd2/
-RUN \
-  curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh && \
-  make deps
+# Build
+FROM golang:1.13-buster AS build
+WORKDIR /go/src/github.com/mpolden/echoip
+COPY . .
+# Must build without cgo because libc is unavailable in runtime image
+ENV GO111MODULE=on CGO_ENABLED=0
 RUN make
 
-FROM scratch as runtime
-ARG TRAVIS_TAG
-COPY --from=build /go/src/github.com/mlaccetti/ipd2/index.html /index.html
-COPY --from=build /go/src/github.com/mlaccetti/ipd2/build/ipd2-${TRAVIS_TAG}-linux_amd64 /ipd2
-COPY --from=build /go/src/github.com/mlaccetti/ipd2/data/city.mmdb /data/city.mmdb
-COPY --from=build /go/src/github.com/mlaccetti/ipd2/data/country.mmdb /data/country.mmdb
-ENTRYPOINT ["/ipd2"]
-CMD ["--verbose"]
+# Run
+FROM scratch
+EXPOSE 8080
+COPY --from=build \
+     /go/bin/echoip \
+     /go/src/github.com/mpolden/echoip/index.html \
+     /opt/echoip/
+WORKDIR /opt/echoip
+ENTRYPOINT ["/opt/echoip/echoip"]

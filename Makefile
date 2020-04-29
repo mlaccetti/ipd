@@ -1,3 +1,5 @@
+DOCKER ?= docker
+DOCKER_IMAGE ?= mpolden/echoip
 OS := $(shell uname)
 TARGET := ipd2
 
@@ -5,87 +7,54 @@ ifeq ($(OS),Linux)
 	TAR_OPTS := --wildcards
 endif
 
-guard-%:
-	@ if [ "${${*}}" = "" ]; then \
-		echo "Environment variable $* not set"; \
-		exit 0; \
-	fi
+all: lint test install
 
-all: deps test vet build
-
-fmt:
-	@echo "Formatting all the things..."
-	go fmt ./...
-	@echo ""
+test:
+	go test ./...
 
 vet:
 	@echo "Vetting stuff"
 	go vet ./...
 	@echo ""
 
-deps:
-	@echo "Ensuring dependencies are in place"
-	dep ensure
-	@echo ""
-	
-databases := GeoLite2-City GeoLite2-Country
+check-fmt:
+	bash -c "diff --line-format='%L' <(echo -n) <(gofmt -d -s .)"
+
+lint: check-fmt vet
+
+install:
+	go install ./...
+
+databases := GeoLite2-City GeoLite2-Country GeoLite2-ASN
 
 $(databases):
-	@echo "Downloading GeoIP databases"
+ifndef GEOIP_LICENSE_KEY
+	$(error GEOIP_LICENSE_KEY must be set. Please see https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/)
+endif
 	mkdir -p data
-	curl -fsSL -m 30 http://geolite.maxmind.com/download/geoip/database/$@.tar.gz | tar $(TAR_OPTS) --strip-components=1 -C $(PWD)/data -xzf - '*.mmdb'
+	@curl -fsSL -m 30 "https://download.maxmind.com/app/geoip_download?edition_id=$@&license_key=$(GEOIP_LICENSE_KEY)&suffix=tar.gz" | tar $(TAR_OPTS) --strip-components=1 -C $(CURDIR)/data -xzf - '*.mmdb'
 	test ! -f data/GeoLite2-City.mmdb || mv data/GeoLite2-City.mmdb data/city.mmdb
 	test ! -f data/GeoLite2-Country.mmdb || mv data/GeoLite2-Country.mmdb data/country.mmdb
-	@echo ""
+	test ! -f data/GeoLite2-ASN.mmdb || mv data/GeoLite2-ASN.mmdb data/asn.mmdb
 
 geoip-download: $(databases)
 
-certs:
-	@echo "Generating test certificates"
-	mkdir -p certs
-	openssl req \
-		-subj "/C=CA/ST=Ontario/L=Toronto/O=Magic Test Ltd./CN=localhost" \
-		-newkey rsa:4096 -nodes -keyout $(PWD)/certs/test-localhost.key \
-		-x509 -days 365 -out $(PWD)/certs/test-localhost.crt
-	@echo ""
-
-test: geoip-download certs
-	@echo "Running tests"
-	go test ./...
-	@echo ""
-
-build: build_darwin_amd64 \
-	build_linux_amd64 \
-	build_windows_amd64
-
-build_darwin_%: GOOS := darwin
-build_linux_%: GOOS := linux
-build_windows_%: GOOS := windows
-build_windows_%: EXT := .exe
-
-build_%_amd64: GOARCH := amd64
-
-build_%:
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -a -installsuffix cgo -o build/$(TARGET)-${TRAVIS_TAG}-$(GOOS)_$(GOARCH)$(EXT) ./cmd/ipd/main.go
-
 docker-build:
-	@echo "Building Docker image for compiling ipd2"
-	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target build --tag mlaccetti/ipd2:${TRAVIS_TAG}-build .
+	$(DOCKER) build -t $(DOCKER_IMAGE) .
 
-docker-release:	guard-TRAVIS_TAG
-	@echo "Building Docker image for release"
-	docker build --build-arg TRAVIS_TAG=${TRAVIS_TAG} --target runtime --tag mlaccetti/ipd2:${TRAVIS_TAG} .
+docker-login:
+	@echo "$(DOCKER_PASSWORD)" | $(DOCKER) login -u "$(DOCKER_USERNAME)" --password-stdin
 
-release: docker-build
-	set -e ;\
-	CONTAINER_ID=$$(docker run -d mlaccetti/ipd2:$$TRAVIS_TAG-build /bin/false) ;\
-	echo "Copying files from Docker container $$CONTAINER_ID for release" ;\
-	rm -fr build ;\
-	mkdir -p build ;\
-	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-darwin_amd64 build/ipd2-$$TRAVIS_TAG-darwin_amd64 ;\
-	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-linux_amd64 build/ipd2-$$TRAVIS_TAG-linux_amd64 ;\
-	docker cp $$CONTAINER_ID:/go/src/github.com/mlaccetti/ipd2/build/ipd2-$$TRAVIS_TAG-windows_amd64.exe build/ipd2-$$TRAVIS_TAG-windows_amd64.exe
+docker-test:
+	$(eval CONTAINER=$(shell $(DOCKER) run --rm --detach --publish-all $(DOCKER_IMAGE)))
+	$(eval DOCKER_PORT=$(shell $(DOCKER) port $(CONTAINER) | cut -d ":" -f 2))
+	curl -fsS -m 5 localhost:$(DOCKER_PORT) > /dev/null; $(DOCKER) stop $(CONTAINER)
 
-clean:
-	@echo "Cleaning up generated folders/files."
-	rm -fr build certs data
+docker-push: docker-test docker-login
+	$(DOCKER) push $(DOCKER_IMAGE)
+
+heroku-run: geoip-download
+ifndef PORT
+	$(error PORT must be set)
+endif
+	echoip -C 1000000 -f data/country.mmdb -c data/city.mmdb -a data/asn.mmdb -p -r -H CF-Connecting-IP -H X-Forwarded-For -l :$(PORT)

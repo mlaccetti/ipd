@@ -1,7 +1,7 @@
 /data/
 /custom.html
 /vendor/
+.vscode/
+/bin/
 /.idea/
-/build/
-/configs/*.pem
 /certs/

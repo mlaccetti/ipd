@@ -1,35 +1,15 @@
-sudo: required
-dist: trusty
+language: minimal
 
 services:
-- docker
+  - docker
 
-language: go
+script:
+  - make docker-build
 
-go:
-- 1.10.x
-
-jobs:
-  include:
-  - stage: build
-    if: (branch IS present) AND (tag IS blank)
-    script:
-    - if [ -z "$TRAVIS_TAG" ]; then export TRAVIS_TAG=dev; fi
-    - make docker-build
-  - stage: deploy
-    if: tag IS present
-    script:
-    - git config --local user.name "Michael Laccetti"
-    - git config --local user.email "michael@laccetti.com"
-    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-    - make docker-release release
-    - docker push mlaccetti/ipd2:${TRAVIS_TAG}
-    deploy:
-      provider: releases
-      api_key:
-        secure: G02+snlJ+UzJe5mZELB7/UDv6xmKQhwr9w5Wkz/SCCYxVoDusKcZ78mfl/Ao/HhV8XSK5+E0Xe6/fOUZKEJXxqwRtdnpMSlOlPih3dw3BSYcLegSXcEAOR/wrHaCaQrnxb9KBGWA4Yf6pcd8rualhJ+ndzbiFWo+PTVKtYRYw6AU/BKU6sGbyOX1eBq8fC6cUhsEgkt87R+erajLxhSj4ObSPa8bmnKJTZReMSUzC74+250yXWal+oOKUIKp465w8AVjoSCHUD1U6JsbpT9oJewMp5awmJcuQtuTwLsm/qjS2HLGD+GGRP6fFoITWUczrRgLyjcmab2ckNpJUFnD++LsUq+Arwg87V5L71ejDljrmzQb0JQdL/r4cEtkhm00caPHPqvhqaEWgLZf4CiiZC08dEwrbEy5PBGlDKKvJAO6d8EOJ4NDS83g2W4HUlHlk2drk2oWAoPILkjnkp8/q2sFdifOJCVMvqyRtPj7M4EGqBGnMZGGvdbK4oXPpO/PS2YBht+5AkwiYii9PhBoX446Mj6ih0nDGG6cyv3WBHPlP5kI4kBDJVLxzVpFGSPgq0TlJABSOUjd+TlciiQQW+FzFJtZiTZn2HTujY3A8lOPXfHDrHpRcUBoxLfF37ChDwEutdYhHHaCIQdu0aTZMnqR8owIMwJJbcs7I/UC/QM=
-      skip_cleanup: true
-      file_glob: true
-      file: build/ipd2*
-      on:
-        tags: true
+deploy:
+  - provider: script
+    script: make docker-push
+  - provider: heroku
+    app: ifconfig-co
+    api_key:
+      secure: IQG/ls5Zu0yua5Ynn5EL9JCPjo1/WcmS0z7BSaXWdgW+JIWFm7oF5z54bUZHl/q1tTuWzAJk59zSTYJijtQqh2Ssl3fLu3uFDwyJSrOuUu1akPlETam8NpdbH4lPkFp75JSDdDXV08c0APmeLL6gqRuTrUuufu69Wigjq4gLo+o=
